@@ -1,0 +1,13 @@
+name: movilidad
+title: movilidad
+username:
+account: randommonkey
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 262392
+bundleId: 1438220
+url: https://randommonkey.shinyapps.io/movilidad/
+when: 1529445133.94628
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .~lock.votacion.csv#|temp.R
