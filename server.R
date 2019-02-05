@@ -35,7 +35,9 @@ shinyServer(
     
     
     datCompCiudad <- reactive({
-      bd_ciud <- dataCompPais() %>%
+      data <- dataCompPais()
+      if (is.null(data)) return()
+      bd_ciud <- data %>%
         distinct(ciudad, .keep_all = TRUE) %>% select(pais, ciudad) %>% drop_na()
       bd_ciud$ciudad
     })
