@@ -415,7 +415,7 @@ shinyServer(
       datM <- baseMap() %>% left_join(codigos)
       df1 <- datM %>% select(name = ciudad, lat, lon, z = varS) %>% drop_na(z)
       df1$label <- dic_ob$label[dic_ob$id == varS]
-      df1$w <- map_chr(df1$z, function(x) format(round(x,2), nsmall=(ifelse(count_pl(x)>2, 2, 0)), big.mark=","))
+      df1$w <- map_chr(df1$z, function(x) format(round(x,2), nsmall=(ifelse(count_pl(x)>2, 2, 0)), big.mark=".", decimal.mark = ","))
       df1
     })
     
@@ -521,6 +521,8 @@ shinyServer(
       
       if ( lstB == 'comparacion') {
         r <-   list(
+          HTML('<h4 style="margin-left:3%;font-weight: 600;">En esta sección encontrará información de transporte de 56 ciudades de Latinoamérica, permitiendole
+                       hacer comparaciones de variables cuantitativas y cualitativas de las ciudades.</h5>'),
           div(class = 'titulo',
               uiOutput('compPais'),
               uiOutput('ciudComp'),
