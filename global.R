@@ -240,13 +240,6 @@ vizBar <- function(data,
                             y = ifelse(nrow(d) == dplyr::n_distinct(d$a), nms[2], paste(agg, nms[2])),
                             hor = horLabel,
                             ver = verLabel)
-  lineXY <- linesOrientation(orientation, horLine, verLine)
-  
-  lineLabelsXY <- linesOrLabel(orientation,
-                               horLineLabel,
-                               verLineLabel)
-  
-
   if (dropNa)
     d <- d %>%
     tidyr::drop_na()
@@ -315,8 +308,6 @@ vizBar <- function(data,
     tooltip$headerFormat <- ""
   }
   
-  global_options(marks[1], marks[2])
-  exportLang(language = lang)
   hc <- highchart() %>%
     hc_chart(type = ifelse(orientation == "hor", "bar", "column")) %>%
     hc_title(text = title) %>%
@@ -332,35 +323,11 @@ vizBar <- function(data,
     hc_tooltip(useHTML=TRUE, pointFormat = tooltip$pointFormat, headerFormat = tooltip$headerFormat) %>%
     hc_xAxis(
       title =  list(text = labelsXY[1]),
-      plotLines = list(
-        list(value = lineXY[2],
-             color = 'black',
-             dashStyle = 'shortdash',
-             zIndex = 5,
-             width = 2,
-             label = list(
-               text = lineLabelsXY[1],
-               style = list(
-                 color = 'black'
-               )
-             ))),
       type= 'category'
     ) %>%
     hc_yAxis(
       title = list (
         text = labelsXY[2]),
-      plotLines = list(
-        list(value = lineXY[1],
-             color = 'black',
-             dashStyle = 'shortdash',
-             width = 2,
-             zIndex = 5,
-             label = list(
-               text = lineLabelsXY[2],
-               style = list(
-                 color = 'black'
-               )
-             ))),
       labels = list (
         format = formatLabAxis,
         formatter = JS(aggFormAxis)
