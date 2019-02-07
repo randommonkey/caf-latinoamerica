@@ -56,6 +56,13 @@ caf_theme <- hc_theme(
       textDecoration= 'none'
     )
   ),
+  bar = list(
+    colorByPoint = T
+  ),
+  column = list(
+    colorByPoint = T
+  ),
+  
   legend = list(
     itemStyle = list(
       fontFamily = '',

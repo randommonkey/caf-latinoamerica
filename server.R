@@ -327,7 +327,15 @@ shinyServer(
         #df[,2] <- round(df[,2], 1)
         print(length(color$color))
         print( dim(df))
-        v <- hgch_bar_CatNum(df, sort = 'desc', orientation = or,  verLabel = '', colors = color$color, tooltip = list(headerFormat = ' ',pointFormat = paste0('<b>Ciudad:</b> {point.a} <br/> <b>', names(df)[2] ,':</b> {point.b:,.1f} ')))  }
+        v <- hgch_bar_CatNum(df, sort = 'desc', orientation = or,  verLabel = '', colors = color$color, tooltip = list(headerFormat = ' ',pointFormat = paste0('<b>Ciudad:</b> {point.a} <br/> <b>', names(df)[2] ,':</b> {point.b:,.1f} '))) %>% 
+          hc_plotOptions(
+            bar = list(
+              colorByPoint = T
+            ),
+            column = list(
+              colorByPoint = T
+            )
+          )}
       if(dim(df)[2] <= 2 & idOrie == 'treemap') {
         v <- hgch_treemap_CatNum(df, maxColor = '#509f27', minColor = '#005186') }
       # if (dim(df)[2] > 2) {
