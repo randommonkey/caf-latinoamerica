@@ -246,3 +246,37 @@ body {
     background: #bbb;
     fill-opacity: 0.62;
 }
+
+
+.circulo {
+  background: #0b356D;
+  border-radius: 50%;
+  height: 37px;
+  width: 37px;
+}
+
+.circuloPequ {
+  background: #0b356D;
+  border-radius: 50%;
+  height: 20px;
+  width: 20px;
+}
+
+.ContSigla {
+  align-items: center;
+  display: grid;
+  grid-template-columns: 0.2fr 1fr;
+  width: max-content;
+  text-align: -webkit-center;
+  grid-gap: 6px;
+  padding: 1%;
+  color: #000;
+}
+
+
+
+#siglasMapa {
+  position: absolute;
+  margin-top: -10%;
+  margin-left: 3%;
+}

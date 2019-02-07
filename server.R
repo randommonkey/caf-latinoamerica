@@ -37,14 +37,16 @@ shinyServer(
     
     datCompCiudad <- reactive({
       data <- dataCompPais()
-      if (is.null(data)) return()
+      if (is.null(dim(data))) return()
       bd_ciud <- data %>%
         distinct(ciudad, .keep_all = TRUE) %>% select(pais, ciudad) %>% drop_na()
       bd_ciud$ciudad
     })
     
     output$ciudComp <- renderUI({
-      selectizeInput('compCiud', '',  c(`Todas las ciudades` = '', datCompCiudad()), multiple = TRUE,  options = list(plugins= list('remove_button')))
+      dataE <- datCompCiudad()
+      if (is.null(dim(dataE))) return()
+      selectizeInput('compCiud', '',  c(`Todas las ciudades` = '', dataE), multiple = TRUE,  options = list(plugins= list('remove_button')))
     })
     
     output$tipoVar <- renderUI({
@@ -53,7 +55,6 @@ shinyServer(
     
     
     baseComp <- reactive({
-      
       
       tipData  <- input$typeVar
       if (is.null(tipData)) return()
@@ -95,18 +96,21 @@ shinyServer(
     })
     
     varCualitativas <- reactive({
+      tc <- input$typeVar
+      if (is.null(tc)) return()
       
-      if (input$typeVar == 'cualitativos') {
-        
+      if (tc == 'cualitativos') {
         varInf <- data.frame(id = names(baseComp()))
         a <- varInf %>% inner_join(dic_ob)
-      } else {
-        return()
       }
       a
     })
     
     output$varCual <- renderUI({
+      
+      tc <- input$typeVar
+      if (is.null(tc)) return()
+      
       vel <- setNames(varCualitativas()$id, varCualitativas()$label)
       acd <- varCualitativas()  %>% drop_na(grupo) %>%
         dplyr::group_by(grupo) %>% nest()
@@ -119,6 +123,7 @@ shinyServer(
     
     
     varSelc <- reactive({
+      print('error1')
       varInf <- names(baseComp())
       varCom <- dataComp %>% distinct(variableUno, .keep_all = TRUE)
       varInfv1 <- data.frame(variableUno = intersect(varCom$variableUno, varInf))
@@ -132,6 +137,7 @@ shinyServer(
     })
     
     output$selecUno <- renderUI({
+      
       if (is.null(varSelc)) return()
       varsu <- varSelc() %>% distinct(variableUno, .keep_all = TRUE)
       selVar1 <- as.list(setNames(varsu$variableUno, varsu$sigUno))
@@ -500,7 +506,24 @@ shinyServer(
       h
     })
     
-    
+    output$siglasMapa <- renderUI({
+      if (mean(dataBubble()$z) == 1) return()
+      
+      varS <- trimws(input$indSel)
+      if(is.null(varS)) return()
+      
+      a <- HTML(dic_ob$Unidad[dic_ob$id == varS])
+      if (is.na(a)) a <- ''
+      
+      div(class = 'ContSigla',
+          div(class = 'circulo', ''),
+          HTML(paste0('<span>', unique(dataBubble() %>%  filter(z == max(dataBubble()$z)) %>%  .$w), ' <span>', a, '</span></span>')),
+          div(class = 'circuloPequ', ''),
+          HTML(paste0('<span>', unique(dataBubble() %>%  filter(z == min(dataBubble()$z)) %>%  .$w), ' <span>', a, '</span></span>'))
+      )
+      # 
+      # print(dataBubble())
+    })
     
     output$MapaGraf <- renderHighchart({
 
@@ -570,9 +593,13 @@ shinyServer(
                    actionButton('ClearMap', icon("erase", lib = "glyphicon"), class = 'cleanBut'))),
           div(class = 'temCont',
               #div(class = 'contViz',
-              uiOutput('MapaViz'),#),#, width = 800, height = 530)),
+              div(class = 'mapaStyle',
+              uiOutput('MapaViz'),
+              uiOutput('siglasMapa')
+              ),#, width = 800, height = 530)),
               div(class = 'ficha', id = 'styleScroll',
-                  uiOutput('descripcion')))
+                  uiOutput('descripcion'))
+              )
         )}
       if (lstB == 'ranking') {
         r <- list(
