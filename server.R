@@ -8,6 +8,7 @@ shinyServer(
       idClick <- input$last_click
       if (is.null(idClick)) idClick <- 'comparacion'
       datV$tabElg <- idClick
+      print('click')
       print(datV$tabElg)
     })
     
@@ -53,29 +54,42 @@ shinyServer(
     
     baseComp <- reactive({
       
-      idP <- input$PaisComp
-      idC <- input$compCiud
       
       tipData  <- input$typeVar
+      if (is.null(tipData)) return()
+      
       if (tipData == 'cuantitativos') tipData <- 'Num'
       if (tipData == 'cualitativos') tipData <- 'Cat'
       
       d <- dic_ob %>% filter(ctypes == tipData) %>% drop_na(label)
-      d$id
+
       if (tipData == 'Cat') {
         datSelC <- data[,d$id] }
       if (tipData == 'Num') {
         datSelC <- data[, c('pais', 'ciudad', d$id)]}
-      datSelC
-      if (is.null(idP) & is.null(idC)) {
-        df <- datSelC }
-      if (!is.null(idP) & is.null(idC)) {
-        df <- datSelC %>% filter(pais %in% idP) }
-      if (!is.null(idP) & !is.null(idC)){
-        df <- datSelC %>% filter(pais %in% idP, ciudad %in% idC)}
-      if (is.null(idP) & !is.null(idC)) {
-        df <- datSelC %>% filter(ciudad %in% idC)
-      }
+     
+      
+      
+      idP <- input$PaisComp
+      if (is.null(idP)) idP <- 'Todas'
+      
+      if (idP == 'Todas') {
+        paises <- unique(datSelC$pais)
+      } else {
+        paises <- idP
+      } 
+      
+      idC <- input$compCiud
+      if (is.null(idC)) idC <- 'Todas'
+      
+      if (idC == 'Todas') {
+        ciudades <- unique(datSelC$ciudad)
+      } else {
+        ciudades <- idC
+      } 
+      
+      df <- datSelC %>% filter(pais %in% paises)
+      df <- df %>% filter(ciudad %in% ciudades)
       df <- Filter(function(x) !all(is.na(x)), df)
       df
     })
@@ -324,10 +338,7 @@ shinyServer(
       
       
       if (dim(df)[2] <= 2 & idOrie != 'treemap') {
-        #df[,2] <- round(df[,2], 1)
-        print(length(color$color))
-        print( dim(df))
-        v <- vizBar(df, sort = 'desc', orientation = or,  verLabel = '', colors = color$color, tooltip = list(headerFormat = ' ',pointFormat = paste0('<b>Ciudad:</b> {point.a} <br/> <b>', names(df)[2] ,':</b> {point.y:,.1f} ')))}
+        v <- vizBar(df, sort = 'desc', orientation = or,  verLabel = '', horLabel = '', colors = color$color, tooltip = list(headerFormat = ' ',pointFormat = paste0('<b>Ciudad:</b> {point.name} <br/> <b>', names(df)[2] ,':</b> {point.y:,.1f} ')))}
       if(dim(df)[2] <= 2 & idOrie == 'treemap') {
         v <- hgch_treemap_CatNum(df, maxColor = '#509f27', minColor = '#005186') }
       # if (dim(df)[2] > 2) {
