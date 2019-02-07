@@ -56,12 +56,6 @@ caf_theme <- hc_theme(
       textDecoration= 'none'
     )
   ),
-  bar = list(
-    colorByPoint = T
-  ),
-  column = list(
-    colorByPoint = T
-  ),
   
   legend = list(
     itemStyle = list(
@@ -215,19 +209,14 @@ vizBar <- function(data,
                    verLineLabel = " ",
                    labelWrap = 12,
                    colors = NULL,
-                   colorScale = 'no',
                    agg = "sum",
                    orientation = "ver",
                    marks = c(".", ","),
                    nDigits = NULL,
                    dropNa = FALSE,
-                   highlightValueColor = '#F9B233',
                    percentage = FALSE,
                    format = c('', ''),
-                   highlightValue = NULL,
                    order = NULL,
-                   sort = "no",
-                   sliceN = NULL,
                    showText = TRUE,
                    legendPosition = c("right", "bottom"),
                    tooltip = list(headerFormat = NULL, pointFormat = NULL),
@@ -257,25 +246,7 @@ vizBar <- function(data,
                                horLineLabel,
                                verLineLabel)
   
-  if (colorScale == 'discrete') {
-    colorDefault <- c("#74D1F7", "#2E0F35", "#B70F7F", "#C2C4C4", "#8097A4", "#A6CEDE", "#801549", "#FECA84", "#ACD9C2")
-    colorDefault <- discreteColorSelect(colorDefault, d)
-  } else {
-    colorDefault <- leaflet::colorNumeric(c("#2E0F35", "#A6CEDE"), 1:length(unique(d$a)))(1:length(unique(d$a)))
-  }
-  
-  
-  if (!is.null(colors)) {
-    colors <- unname(fillColors(d, "a", colors, colorScale))
-  } else {
-    if (colorScale == 'no') {
-      colors <- c("#74D1F7", "#74D1F7")
-    } else {
-      colors <- colorDefault
-    }
-  }
-  
-  
+
   if (dropNa)
     d <- d %>%
     tidyr::drop_na()
@@ -299,17 +270,12 @@ vizBar <- function(data,
   }
   
   d$b <- round(d$b, nDig)
-  d <- orderCategory(d, "a", order, labelWrap)
-  d <- sortSlice(d, "b", sort, sliceN)
+  d <- d %>% arrange(-b) 
   
   
   d <- d %>% plyr::rename(c('b' = 'y'))
-  d$color <- NA
-  
-  if (!is.null(highlightValue)) {
-    w <- which(d$a %in% highlightValue)
-    d$color[w] <- highlightValueColor
-  }
+  d$color <- colors
+  print(d$colors)
   
   data <- list()
   bla <- map(1:nrow(d), function(z){
@@ -355,6 +321,14 @@ vizBar <- function(data,
     hc_chart(type = ifelse(orientation == "hor", "bar", "column")) %>%
     hc_title(text = title) %>%
     hc_subtitle(text = subtitle) %>%
+    hc_plotOptions(
+      bar = list(
+        colorByPoint = T
+      ),
+      column = list(
+        colorByPoint = T
+      )
+    ) %>% 
     hc_tooltip(useHTML=TRUE, pointFormat = tooltip$pointFormat, headerFormat = tooltip$headerFormat) %>%
     hc_xAxis(
       title =  list(text = labelsXY[1]),
@@ -406,11 +380,16 @@ vizBar <- function(data,
           menuItems = list('printChart', 'downloadJPEG', 'downloadPNG', 'downloadSVG', 'downloadPDF')
         )
       ))}
-  
-  if (is.null(theme)) {
-    hc <- hc %>% hc_add_theme(custom_theme(custom = tma(showText = showText, colores = colors)))
-  } else {
-    hc <- hc %>% hc_add_theme(custom_theme(custom = theme))
-  }
-  hc
+  hc  %>% hc_add_theme(custom_theme(custom = hc_theme(
+    #colors = c(),
+    chart = list(
+      backgroundColor = "#FFFFFF",
+      style = list(
+        color = '#333333',
+        fontFamily = "Open Sans",
+        textDecoration= 'none'
+      )
+    )
+  )
+  ))
 }
