@@ -192,4 +192,8 @@ vizScatter <- function(data, title = NULL, subtitle = NULL, caption = NULL, horL
 
 
 
+# thema barras por país
+
+paisesColor <- data.frame(pais = unique(data$pais), color = c('#0b356D', '#3F8909', '#ACA9A9','#CD7031','#1670D2', '#c9d4e2', '#549293', '#915392', '#3f1f25', '#870E25', '#68A399', '#2a5F06', '#3F1F3F', '#DD7589', '#526643'))
+
 
