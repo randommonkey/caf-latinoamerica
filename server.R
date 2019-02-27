@@ -12,45 +12,56 @@ shinyServer(
       print(datV$tabElg)
     })
     
+    
     # Comparación -------------------------------------------------------------
     
+    paises <- reactive({
+      var1 <- input$selVarUno
+      if (is.null(var1)) return()
+      var2 <- input$selVarDos
+      if (is.null(var2)) return()
+      data <- dataSel %>% select_("pais", "ciudad", var1, var2)
+      data %>% drop_na()
+    })
     
     output$compPais <- renderUI({
-      selectizeInput('PaisComp', HTML('<div class="titX">País</div>'), c(`Todos los paises`= '', unique(data$pais)), multiple = TRUE, options = list(plugins= list('remove_button')))
+      selectizeInput('PaisComp', HTML('<div class="titX">País</div>'), c(`Todos los paises`= '', unique(paises()$pais)), multiple = TRUE, options = list(plugins= list('remove_button')))
     })
+   
     
-    dataCompPais <- reactive({
-      idcS <- input$PaisComp
-      
-      varComp <- unique(c(unique(dataComp$variableUno), unique(dataComp$VariableDos)))
-      if (is.null(idcS)) {
-        df <- data 
-        df <- df[,c('pais', 'ciudad', varComp)]}
-      if (!is.null(idcS)) {
-        df <- data[,c('pais', 'ciudad', varComp)]
-        df <- df %>% filter(pais %in% idcS)
-        df <- Filter(function(x) !all(is.na(x)), df)
+    ciudades <- reactive({
+      paisSelc <- input$PaisComp
+      if (is.null(paisSelc)){
+        d <- paises()
+      } else {
+      d <- paises() %>% filter(pais %in% paisSelc)
       }
-      df
+      
+      d
     })
-    
-    
-    datCompCiudad <- reactive({
-      data <- dataCompPais()
-      if (is.null(dim(data))) return()
-      bd_ciud <- data %>%
-        distinct(ciudad, .keep_all = TRUE) %>% select(pais, ciudad) %>% drop_na()
-      bd_ciud$ciudad
-    })
+ 
     
     output$ciudComp <- renderUI({
-      dataE <- datCompCiudad()
-      if (is.null(dim(dataE))) return()
-      selectizeInput('compCiud', '',  c(`Todas las ciudades` = '', dataE), multiple = TRUE,  options = list(plugins= list('remove_button')))
+      selectizeInput('compCiud', '',  c(`Todas las ciudades` = '', ciudades()$ciudad), multiple = TRUE,  options = list(plugins= list('remove_button')))
     })
+    
     
     output$tipoVar <- renderUI({
       selectizeInput('typeVar', ', comparación de datos', c('cuantitativos', 'cualitativos'))
+    })
+    
+    output$selecUno <- renderUI({
+      varUno <- as.list(setNames(unique(dataComp$variableUno), unique(dataComp$sigUno)))
+      selectizeInput('selVarUno', 'de ', varUno)
+    })
+    
+    output$selecDos <- renderUI({
+       varUnoElg <- input$selVarUno
+       print(varUnoElg)
+       dataVarDs <- dataComp %>% filter(variableUno == varUnoElg)
+       print(dataVarDs)
+      varDos <- as.list(setNames(unique(dataVarDs$VariableDos), unique(dataVarDs$sigDos)))
+      selectizeInput('selVarDos', 'Vs', varDos)
     })
     
     
@@ -63,13 +74,11 @@ shinyServer(
       if (tipData == 'cualitativos') tipData <- 'Cat'
       
       d <- dic_ob %>% filter(ctypes == tipData) %>% drop_na(label)
-
+      
       if (tipData == 'Cat') {
         datSelC <- data[,d$id] }
       if (tipData == 'Num') {
         datSelC <- data[, c('pais', 'ciudad', d$id)]}
-     
-      
       
       idP <- input$PaisComp
       if (is.null(idP)) idP <- 'Todas'
@@ -94,6 +103,11 @@ shinyServer(
       df <- Filter(function(x) !all(is.na(x)), df)
       df
     })
+    
+    output$bla <- renderPrint({
+      baseComp()
+    })
+    
     
     varCualitativas <- reactive({
       tc <- input$typeVar
@@ -136,20 +150,6 @@ shinyServer(
       varInfv1 %>% inner_join(dataF)
     })
     
-    output$selecUno <- renderUI({
-      
-      if (is.null(varSelc)) return()
-      varsu <- varSelc() %>% distinct(variableUno, .keep_all = TRUE)
-      selVar1 <- as.list(setNames(varsu$variableUno, varsu$sigUno))
-      selectizeInput('selVarUno', 'de ', selVar1)
-    })
-    
-    output$selecDos <- renderUI({
-      varSu <- varSelc() %>% filter(variableUno == input$selVarUno)
-      varsu <- varSu %>% distinct(VariableDos, .keep_all = TRUE)
-      selVar1 <- as.list(setNames(varsu$VariableDos, varsu$sigDos))
-      selectizeInput('selVarDos', 'Vs', selVar1)
-    })
     
     output$varComp <- renderUI({
       
@@ -317,7 +317,7 @@ shinyServer(
       df <- datRank()
       
       if (is.null(df)) return()
-        
+      
       
       varInf <- data.frame(id = names(df))
       dic <- varInf %>% inner_join(dic_ob)
@@ -454,53 +454,53 @@ shinyServer(
       
       if (lstB == 'mapa') {
         varS <- input$indSel
-      df0 <- baseMap() %>% left_join(codigos) %>% select(name = country_name) %>% distinct()
-      df0$z <- 1
-      
-      h <- highchart() %>%
-        highcharter::hc_add_series_map(map = mapLam, showInLegend = FALSE, nullColor = "#f7f7f7", borderWidth = 1,
-                                       df = df0,  value = "z", joinBy = "name",
-                                       tooltip= list(
-                                         headerFormat= '',
-                                         pointFormat='<b>{point.name}</b>'
-                                       )) %>%
-        hc_colorAxis(maxColor = "#f7f7f7", minColor = "#f7f7f7") %>%
-        hc_legend(enabled = FALSE) %>%
-        hc_add_series(data = dataBubble(), type = "mapbubble",
-                      dataLabels= list(
-                        enabled= TRUE,
-                        color= '#000',
-                        format = '{point.name}',
-                        style= list(
-                          fontWeight = 'bold',
-                          textShadow = FALSE,
-                          fontFamily = 'Open Sans',
-                          textOutline = FALSE
-                        )),
-                      allowPointSelect = TRUE,
-                      cursor = 'pointer', minSize = '3%',
-                      maxSize = 30,
-                      color = "#005186",
-                      tooltip= list(
-                        headerFormat= '',
-                        pointFormat='<b>{point.name}</b><br>
-                        <b>{point.label}: </b>{point.w}</>'
-                      )) %>%
-        hc_mapNavigation(enabled = TRUE,
-                         buttonOptions = list(align = 'left',
-                                              verticalAlign = 'top')
-        ) %>%
-        hc_exporting(enabled = TRUE, buttons= list(
-          contextButton= list(
-            symbol= 'url(https://cdn1.iconfinder.com/data/icons/feather-2/24/download-32.png)',
-            height= 30,
-            width= 33,
-            symbolSize= 24,
-            symbolX= 30,
-            symbolY= 30,
-            menuItems = list('printChart', 'downloadJPEG', 'downloadPNG', 'downloadSVG', 'downloadPDF')
-          )
-        ))
+        df0 <- baseMap() %>% left_join(codigos) %>% select(name = country_name) %>% distinct()
+        df0$z <- 1
+        
+        h <- highchart() %>%
+          highcharter::hc_add_series_map(map = mapLam, showInLegend = FALSE, nullColor = "#f7f7f7", borderWidth = 1,
+                                         df = df0,  value = "z", joinBy = "name",
+                                         tooltip= list(
+                                           headerFormat= '',
+                                           pointFormat='<b>{point.name}</b>'
+                                         )) %>%
+          hc_colorAxis(maxColor = "#f7f7f7", minColor = "#f7f7f7") %>%
+          hc_legend(enabled = FALSE) %>%
+          hc_add_series(data = dataBubble(), type = "mapbubble",
+                        dataLabels= list(
+                          enabled= TRUE,
+                          color= '#000',
+                          format = '{point.name}',
+                          style= list(
+                            fontWeight = 'bold',
+                            textShadow = FALSE,
+                            fontFamily = 'Open Sans',
+                            textOutline = FALSE
+                          )),
+                        allowPointSelect = TRUE,
+                        cursor = 'pointer', minSize = '3%',
+                        maxSize = 30,
+                        color = "#005186",
+                        tooltip= list(
+                          headerFormat= '',
+                          pointFormat='<b>{point.name}</b><br>
+                          <b>{point.label}: </b>{point.w}</>'
+                        )) %>%
+          hc_mapNavigation(enabled = TRUE,
+                           buttonOptions = list(align = 'left',
+                                                verticalAlign = 'top')
+          ) %>%
+          hc_exporting(enabled = TRUE, buttons= list(
+            contextButton= list(
+              symbol= 'url(https://cdn1.iconfinder.com/data/icons/feather-2/24/download-32.png)',
+              height= 30,
+              width= 33,
+              symbolSize= 24,
+              symbolX= 30,
+              symbolY= 30,
+              menuItems = list('printChart', 'downloadJPEG', 'downloadPNG', 'downloadSVG', 'downloadPDF')
+            )
+          ))
       }
       
       h
@@ -526,11 +526,11 @@ shinyServer(
     })
     
     output$MapaGraf <- renderHighchart({
-
+      
       
       h <- bla() #%>% 
-        # hc_add_series(data = df, type = "mapbubble",
-        #               minSize = 0, maxSize = 30)
+      # hc_add_series(data = df, type = "mapbubble",
+      #               minSize = 0, maxSize = 30)
       h
     })
     
@@ -569,7 +569,7 @@ shinyServer(
       if ( lstB == 'comparacion') {
         r <-   list(
           HTML('<h4 style="margin-left:3%;font-weight: 600;">En esta sección encontrará información de transporte de 56 ciudades de Latinoamérica, permitiendole
-                       hacer comparaciones de variables cuantitativas y cualitativas de las ciudades.</h5>'),
+               hacer comparaciones de variables cuantitativas y cualitativas de las ciudades.</h5>'),
           div(class = 'titulo',
               uiOutput('compPais'),
               uiOutput('ciudComp'),
@@ -582,7 +582,7 @@ shinyServer(
                   uiOutput('vizComparada')),
               div(class = 'ficha', id = 'styleScroll',
                   uiOutput('textCOMP')))
-        )}
+          )}
       if (lstB == 'mapa') {
         r <- list(
           div(class = 'titulo',
@@ -594,12 +594,12 @@ shinyServer(
           div(class = 'temCont',
               #div(class = 'contViz',
               div(class = 'mapaStyle',
-              uiOutput('MapaViz'),
-              uiOutput('siglasMapa')
+                  uiOutput('MapaViz'),
+                  uiOutput('siglasMapa')
               ),#, width = 800, height = 530)),
               div(class = 'ficha', id = 'styleScroll',
                   uiOutput('descripcion'))
-              )
+          )
         )}
       if (lstB == 'ranking') {
         r <- list(
@@ -679,7 +679,5 @@ shinyServer(
         }
         zip(file, tmp)
       })
-    
-    
     
   })

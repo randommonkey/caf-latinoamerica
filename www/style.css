@@ -2,6 +2,11 @@
 
 .shiny-output-error {
   visibility: hidden; 
+  -moz-visibility: hidden;
+}
+
+.shiny-output-error:before { 
+  visibility: hidden;
 }
  
 *:before,
@@ -124,6 +129,7 @@ body {
 
 .selectize-input {
   min-height: 33px;
+  min-width: 150px;
   border: 2px dashed #cccccc !important;
 }
 
