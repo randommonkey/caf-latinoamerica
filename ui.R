@@ -1,3 +1,10 @@
+library(shiny)
+library(shinyjs)
+library(hgchmagic)
+library(DT)
+library(tidyverse)
+library(zip)
+
 shinyUI(
 fluidPage(
 useShinyjs(),
