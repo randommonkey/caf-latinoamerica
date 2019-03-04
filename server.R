@@ -57,7 +57,7 @@ shinyServer(
     
     output$selecDos <- renderUI({
        varUnoElg <- input$selVarUno
-       print(varUnoElg)
+       if (is.null(varUnoElg)) return()
        dataVarDs <- dataComp %>% filter(variableUno == varUnoElg)
        print(dataVarDs)
       varDos <- as.list(setNames(unique(dataVarDs$VariableDos), unique(dataVarDs$sigDos)))
@@ -104,9 +104,7 @@ shinyServer(
       df
     })
     
-    output$bla <- renderPrint({
-      baseComp()
-    })
+   
     
     
     varCualitativas <- reactive({
@@ -442,6 +440,7 @@ shinyServer(
     
     dataBubble <- reactive({
       varS <- input$indSel
+      if (is.null(varS)) return()
       datM <- baseMap() %>% left_join(codigos)
       df1 <- datM %>% select(name = ciudad, lat, lon, z = varS) %>% drop_na(z)
       df1$label <- dic_ob$label[dic_ob$id == varS]
@@ -451,7 +450,7 @@ shinyServer(
     
     bla <- reactive({
       lstB <- input$last_click
-      
+      if (is.null(lstB)) return()
       if (lstB == 'mapa') {
         varS <- input$indSel
         df0 <- baseMap() %>% left_join(codigos) %>% select(name = country_name) %>% distinct()
