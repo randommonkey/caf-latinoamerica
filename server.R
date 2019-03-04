@@ -457,7 +457,18 @@ shinyServer(
         df0 <- baseMap() %>% left_join(codigos) %>% select(name = country_name) %>% distinct()
         df0$z <- 1
         
-        h <- highchart() %>%
+        h <- highchart(type = "map") %>%
+          hc_chart(backgroundColor = "transparent", 
+                   style = list(
+                     fontFamily= 'Open Sans'
+                   )) %>%
+          # hc_plotOptions(
+          #     series = list(
+          #       dataLabels = list(
+          #         allowOverlap = TRUE
+          #       )
+          #     )
+          # ) %>%
           highcharter::hc_add_series_map(map = mapLam, showInLegend = FALSE, nullColor = "#f7f7f7", borderWidth = 1,
                                          df = df0,  value = "z", joinBy = "name",
                                          tooltip= list(
@@ -478,6 +489,7 @@ shinyServer(
                             textOutline = FALSE
                           )),
                         allowPointSelect = TRUE,
+                        allowOverlap = TRUE,
                         cursor = 'pointer', minSize = '3%',
                         maxSize = 30,
                         color = "#005186",
@@ -535,7 +547,7 @@ shinyServer(
     })
     
     output$MapaViz <- renderUI({
-      highchartOutput('MapaGraf', width = 750, height = 570)
+      highchartOutput('MapaGraf', width = 850, height = 590)
     })
     
     observeEvent(input$ClearComp, {

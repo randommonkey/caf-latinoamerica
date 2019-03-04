@@ -13,8 +13,8 @@ hcoptslang$downloadJPEG <- "Descarga en JPEG"
 hcoptslang$downloadPNG <- "Descarga en PNG"
 hcoptslang$downloadPDF <- "Descarga en PDF"
 hcoptslang$downloadSVG <- "Descarga en SVG"
-hcoptslang$thousandsSep <- ","
-hcoptslang$decimalPoint <- "."
+hcoptslang$thousandsSep <- "."
+hcoptslang$decimalPoint <- ","
 # hcoptslang$downloadCSV <- "Descarga en CSV"
 # hcoptslang$downloadXLS <- "Descarga en XLS"
 
@@ -105,7 +105,7 @@ vizScatter <- function(data, title = NULL, subtitle = NULL, caption = NULL, horL
   df$a <- as.character(df$a)
   df$c <- as.numeric(df$c)
   df$d <- as.numeric(df$d)
-  df$text1 <- map_chr(df$c, function(x) format(round(x,2), nsmall=(ifelse(count_pl(x)>2, 2, 0)), big.mark=","))
+  df$text1 <- map_chr(df$c, function(x) format(round(x,2), nsmall=(ifelse(count_pl(x)>2, 2, 0)), big.mark="."))
   df$text2 <- map_chr(df$d, function(x) format(round(x,2), nsmall=(ifelse(count_pl(x)>2, 2, 0)), big.mark=".", decimal.mark = ","))
   df$z <- 1
   hc <- hchart(df, type = "bubble", hcaes(x = c, y = d, z = z,group = a),  maxSize = 15, marker= list(
