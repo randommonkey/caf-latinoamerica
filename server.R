@@ -103,8 +103,8 @@ vizScatter <- function(data, title = NULL, subtitle = NULL, caption = NULL, horL
   df <- f$d %>% drop_na()  %>% dplyr::group_by(a,b) #%>%
   #dplyr::summarise(c = c, d = d)
   df$a <- as.character(df$a)
-  df$c <- as.numeric(df$c)
-  df$d <- as.numeric(df$d)
+  df$c <- round(as.numeric(df$c), 2)
+  df$d <- round(as.numeric(df$d),2)
   df$text1 <- map_chr(df$c, function(x) format(round(x,2), nsmall=(ifelse(count_pl(x)>2, 2, 0)), big.mark="."))
   df$text2 <- map_chr(df$d, function(x) format(round(x,2), nsmall=(ifelse(count_pl(x)>2, 2, 0)), big.mark=".", decimal.mark = ","))
   df$z <- 1
